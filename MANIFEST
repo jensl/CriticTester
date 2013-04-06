@@ -1,0 +1,47 @@
+Author = "Jens Lindstr\u00f6m"
+Description = "Extension that runs automatic testing on open reviews."
+
+[Page CriticTester/about]
+Description = "Documentation."
+Script = server/about.js
+Function = main
+
+[Page CriticTester/list]
+Description = "Operation: List tests to run."
+Script = server/list.js
+Function = main
+
+[Page CriticTester/submit]
+Description = "Operation: Submit test results."
+Script = server/submit.js
+Function = main
+
+[Page CriticTester/delete]
+Description = "Operation: Delete test results."
+Script = server/delete.js
+Function = main
+
+[Page CriticTester/report]
+Description = "Page: Display test report."
+Script = server/report.js
+Function = main
+
+[Page CriticTester/log]
+Description = "Page: Display test log."
+Script = server/log.js
+Function = main
+
+[Page CriticTester/coverage]
+Description = "Page: Display code coverage."
+Script = server/coverage.js
+Function = main
+
+[Page CriticTester/push]
+Description = "Operation: Push reviewed and tested commits to master."
+Script = server/push.js
+Function = main
+
+[Inject showreview]
+Description = "Inject: Review front-page alterations."
+Script = server/showreview.js
+Function = main

@@ -1,0 +1,73 @@
+Critic Tester
+=============
+
+Testing basics
+--------------
+
+The testing done by the Critic Tester system is dynamically determined by the
+state of the review branch at any given time.  This is the actual review branch
+-- the set of commits shown by the <code>[actual log]</code> link if the review
+has been rebased, not (necessarily) the set of commits listed on the review
+front-page.
+
+When the review branch is updated, whether by pushing additional commits to it
+or by rebasing it, the set of tests to run is recalculated.  This may lead to
+new tests being scheduled for running, and/or to old test results being
+discarded.
+
+All tests run for any given branch must be successful -- show no errors or
+warnings -- for the review to be considered to have a clean testing record.
+This means that no commit that has testing issues may be integrated, even if the
+issues are fixed by later commits in the same review.  The review branch must be
+rebased first so that the commit that fixes the issue precedes the commit with
+the issue, or by squashing the fix into the commit with the issue.
+
+Calculation of tests to run
+---------------------------
+
+Individual tests to run are calculated by selecting a set of commits out of the
+commits on the review branch, and then generating a set of test runs per
+selected commit.  Each test run is then executed in a number of different VM
+instances with different supported operating systems installed.
+
+Commit selection
+----------------
+The commits to test are selected as follows:
+
+* On a "clean" branch with no fixup! or squash! commits, every commit is
+  selected.
+
+* On an "unclean" branch, the same set of commits are selected, except that each
+  commit is represented by its final fixup! or squash! commit, if it has one.
+
+* When a "real" commit is represented by its final fixup! or squash!, every
+  commit between the real commit and the final fixup! or squash! is disqualified
+  from testing.  This may mean that some "real" commits are not selected at all.
+
+The theory is that every commit that has a later fixup! or squash!, and any
+commit in between, are broken, and that testing them is a waste of time, and a
+source of noise.  It is assumed that a branch containing fixup! or squash!
+commits will be rebased before being merged to master, and on that rebased
+branch, free from fixup! or squash! commits, each and every real commit is
+ultimately tested before integration.
+
+It can also be noted that at least the tip of the branch is always selected, by
+applying these rules.
+
+Per-commit testing
+------------------
+Each commit selected for testing is tested in a few different ways:
+
+* Installed directly.
+
+* Upgraded from each of its immediate parents.  For a commit represented by its
+  final fixup! or squash! commit, the immediate parents are the parents of the
+  original commit, not the fixup! or squash! commit.
+
+* Upgraded from each of the review's upstreams (typically its merge-base with
+  master.)
+
+There will be an overlap -- each of the review's upstreams will also be the
+immediate parent of at least one commit in the review.  Such overlap is
+eliminated; only one instance of each unique test is run.
+

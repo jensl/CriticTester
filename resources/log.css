@@ -1,0 +1,67 @@
+div.message {
+    margin: 1em 2em
+}
+
+div.message span.title {
+    font-size: 120%;
+    font-weight: bold
+}
+
+div.message span.message {
+    font-family: monospace;
+    border: 1px solid #bb8;
+    background: #ffe;
+    padding: 5px
+}
+
+div.level {
+    margin: 0.5em 0;
+    font-weight: bold
+}
+
+div.level label {
+    margin-right: 1em
+}
+
+table.log {
+    margin: 1em 0;
+    border: 2px solid #bb8;
+    padding: 0.5em;
+    background: #ffe;
+    font-family: monospace
+}
+
+table.log th, table.log td {
+    text-align: left;
+    padding: 0 5px;
+    vertical-align: top
+}
+
+table.log th.time, table.log td.time {
+    text-align: right
+}
+
+table.log tr.entry td.text {
+    white-space: pre-wrap
+}
+
+table.log tr.debug {
+    display: none
+}
+table.log.show-debug tr.debug {
+    display: table-row
+}
+
+table.log tr.info {
+    display: none
+}
+table.log.show-info tr.info, table.log.show-debug tr.info {
+    display: table-row
+}
+
+table.log tr.warning {
+    display: none
+}
+table.log.show-warning tr.warning, table.log.show-info tr.warning, table.log.show-debug tr.warning {
+    display: table-row
+}

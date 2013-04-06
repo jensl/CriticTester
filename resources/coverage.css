@@ -1,0 +1,52 @@
+div.message {
+    margin: 1em 2em
+}
+
+div.message span.title {
+    font-size: 120%;
+    font-weight: bold
+}
+
+div.message span.message {
+    font-family: monospace;
+    border: 1px solid #bb8;
+    background: #ffe;
+    padding: 5px
+}
+
+div.level {
+    margin: 0.5em 0;
+    font-weight: bold
+}
+
+div.level label {
+    margin-right: 1em
+}
+
+table.coverage {
+    margin: 1em 0;
+    border: 2px solid #bb8;
+    border-spacing: 0;
+    padding: 0.5em;
+    background: #ffe;
+    font-family: monospace
+}
+
+table.coverage th {
+    border-bottom: 1px solid #bb8
+}
+
+table.coverage .ratio {
+    text-align: right;
+    width: 8em
+}
+
+table.coverage th, table.coverage td {
+    text-align: left;
+    padding: 2px 5px;
+    vertical-align: top
+}
+
+table.coverage tr.file:hover td {
+    background-color: #eed
+}

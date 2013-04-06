@@ -1,0 +1,30 @@
+div.testing-status {
+    display: inline;
+    font-size: 150%;
+    margin-right: 1em;
+    border: 3px solid;
+    border-radius: 5px;
+    padding: 5px
+}
+
+div.testing-status.clickable {
+    cursor: pointer
+}
+
+div.testing-status.errors, div.testing-status.warnings {
+    border-color: #800;
+    background-color: #f88;
+    color: #600
+}
+
+div.testing-status.pending, div.testing-status.nottested {
+    border-color: #880;
+    background-color: #ff4;
+    color: #660
+}
+
+div.testing-status.clear {
+    border-color: #0d0;
+    background-color: #6f6;
+    color: #080
+}

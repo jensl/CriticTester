@@ -1,0 +1,63 @@
+tr.html > td {
+    text-align: center !important
+}
+
+table.tests {
+    margin: 1em auto;
+    border: 2px solid #bb8;
+    padding: 0.5em 0.5em 1em 0.5em;
+    background: #ffe;
+    font-family: monospace
+}
+
+table.tests th, table.tests td {
+    text-align: left;
+    padding: 0 5px;
+    vertical-align: top
+}
+
+table.tests tr.title th {
+    padding-top: 0.5em;
+    border-bottom: 1px solid black;
+    text-align: left;
+    font-size: 120%;
+}
+
+table.tests tr.headings th {
+    padding-top: 0.5em;
+    text-align: left;
+    text-decoration: underline
+}
+
+table.tests a, table.tests a:visited {
+    color: black;
+    text-decoration: none
+}
+
+table.tests a:hover {
+    text-decoration: underline
+}
+
+td.instances a {
+    font-weight: bold
+}
+
+table.tests a.clean {
+    background-color: #6f6;
+    color: #080
+}
+
+table.tests a.warnings {
+    background-color: #880;
+    color: #660
+}
+
+table.tests a.errors {
+    background-color: #f88;
+    color: #600
+}
+
+table.tests a.skipped {
+    background-color: #88f;
+    color: #006
+}
