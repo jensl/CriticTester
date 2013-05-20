@@ -11,15 +11,16 @@ function main(method, path, query) {
   writeln("Content-Type: text/html");
   writeln("");
 
-  critic.html.writeStandardHeader(format("Test Report: r/%d", review.id),
+  var title = format("Test Report: r/%d \"%s\"", review.id, review.summary);
+
+  critic.html.writeStandardHeader(title,
                                   { stylesheets: ["/extension-resource/CriticTester/common.css",
                                                   "/extension-resource/CriticTester/report.css"],
                                     scripts: ["/extension-resource/CriticTester/common.js",
                                               "/extension-resource/CriticTester/report.js"],
                                     review: review });
 
-  var plt = new critic.html.PaleYellowTable(format("Test Report: r/%d \"%s\"",
-                                                   review.id, review.summary));
+  var plt = new critic.html.PaleYellowTable(title);
 
   function group_tests(all_tests) {
     var tests_table = {};

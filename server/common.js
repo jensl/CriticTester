@@ -303,6 +303,11 @@ function open_review_issue(review_id) {
   }
 }
 
+function is_collaborator(user) {
+  var collaborators = JSON.parse(storage.get("collaborators") || "[]");
+  return collaborators.indexOf((user || critic.User.current).name) != -1;
+}
+
 function push_blocked_by(review, pending_tests, finished_tests) {
   if (!finished_tests)
     finished_tests = list_tests({ review_id: review.id,
@@ -340,9 +345,7 @@ function push_blocked_by(review, pending_tests, finished_tests) {
   if (!review.progress.accepted)
     return "review not accepted";
 
-  var collaborators = JSON.parse(storage.get("collaborators") || "[]");
-
-  if (collaborators.indexOf(critic.User.current.name) == -1)
+  if (!is_collaborator())
     return "you are not a collaborator";
 
   var commits = review.branch.commits;

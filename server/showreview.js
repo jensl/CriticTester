@@ -7,6 +7,9 @@ Module.load("common.js");
 function main(path, query) {
   var review_id = parseInt(query.params.id);
   var review = new critic.Review(review_id);
+  var user = (query.params.user
+              ? new critic.User({ name: query.params.user })
+              : critic.User.current);
 
   if (review.repository.name != "critic")
     return;
@@ -57,7 +60,9 @@ function main(path, query) {
   writeln("script %s", JSON.stringify(
     format("data:text/javascript," +
            "var CriticTester={errors:%r,warnings:%r,pending:%r,finished:%r," +
-           "ready_to_push:%r,ready_to_push_reason:%r,skipped:%r,closed:%r};",
+           "ready_to_push:%r,ready_to_push_reason:%r,skipped:%r,closed:%r," +
+           "is_collaborator:%r};",
            errors, warnings, pending, finished, ready_to_push,
-           ready_to_push_reason, skipped, review.state != "open")));
+           ready_to_push_reason, skipped, review.state != "open",
+           is_collaborator(user))));
 }

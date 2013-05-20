@@ -71,7 +71,7 @@ $(function () {
       });
   }
 
-  if (!CriticTester.closed) {
+  if (!CriticTester.closed && CriticTester.is_collaborator) {
     critic.buttons.add({ title: "Push to master",
                          onclick: pushToMaster,
                          scope: "global" });
