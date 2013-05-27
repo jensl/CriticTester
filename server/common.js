@@ -134,31 +134,37 @@ function tests_from_commits(review, commits, instances, mode) {
   var upstreams = commits.upstreams;
   var processed = {};
 
-  test_commits.reverse().forEach(
-    function (test_commit) {
-      if (test_commit.enabled) {
-        var commit = test_commit.actual;
+  for (var index = test_commits.length - 1; index >= 0; --index) {
+    test_commit = test_commits[index];
 
-        if (!(commit.sha1 in processed)) {
-          processed[commit.sha1] = true;
+    if (!test_commit.enabled)
+      continue;
 
+    var commit = test_commit.actual;
+
+    if (!(commit.sha1 in processed)) {
+      processed[commit.sha1] = true;
+
+      maybe_add({ subject: commit,
+                  parents: test_commit.parents });
+
+      if (index != 0) {
+        var previous_test_commit = test_commits[index - 1];
+
+        if (previous_test_commit.actual.isAncestorOf(commit)) {
           maybe_add({ subject: commit,
-                      parents: test_commit.parents });
-
-          test_commit.parents.forEach(
-            function (parent) {
-              maybe_add({ subject: commit,
-                          upgrade_from: parent });
-            });
-
-          upstreams.forEach(
-            function (upstream) {
-              maybe_add({ subject: commit,
-                          upgrade_from: upstream });
-            });
+                      parents: previous_test_commit.parents,
+                      upgrade_from: previous_test_commit.actual });
         }
       }
-    });
+
+      upstreams.forEach(
+        function (upstream) {
+          maybe_add({ subject: commit,
+                      upgrade_from: upstream });
+        });
+    }
+  }
 
   return tests;
 }
