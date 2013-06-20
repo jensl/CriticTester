@@ -128,6 +128,10 @@ function tests_from_commits(review, commits, instances, mode) {
     if (match)
       test_commit.subject = match[1];
     test_commit.sha1 = commit.sha1;
+    if (test_commits.length)
+      test_commit.previous = test_commits[test_commits.length - 1];
+    else
+      test_commit.previous = null;
     test_commits.push(test_commit);
   }
 
@@ -148,14 +152,10 @@ function tests_from_commits(review, commits, instances, mode) {
       maybe_add({ subject: commit,
                   parents: test_commit.parents });
 
-      if (index != 0) {
-        var previous_test_commit = test_commits[index - 1];
-
-        if (previous_test_commit.actual.isAncestorOf(commit)) {
-          maybe_add({ subject: commit,
-                      parents: previous_test_commit.parents,
-                      upgrade_from: previous_test_commit.actual });
-        }
+      if (test_commit.previous && test_commit.previous.enabled) {
+        maybe_add({ subject: commit,
+                    parents: test_commit.previous.parents,
+                    upgrade_from: test_commit.previous.actual });
       }
 
       upstreams.forEach(
