@@ -28,3 +28,12 @@ div.testing-status.clear {
     background-color: #6f6;
     color: #080
 }
+
+div.testing-status.checking {
+    border-color: #996;
+    color: #996
+}
+
+div.testing-status.checking span.status {
+    font-style: italic
+}

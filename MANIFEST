@@ -41,6 +41,11 @@ Description = "Operation: Push reviewed and tested commits to master."
 Script = server/push.js
 Function = main
 
+[Page CriticTester/status]
+Description = "Operation: Fetch review testing status."
+Script = server/status.js
+Function = main
+
 [Inject showreview]
 Description = "Inject: Review front-page alterations."
 Script = server/showreview.js
