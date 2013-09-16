@@ -35,10 +35,18 @@ function main(method, path, query) {
         if (message == "not tested")
           message = "testing skipped (not relevant)";
 
-        html += format("<div class=%s><span class=title>%s:</span> <span class=message>%s</span></div>",
-                       data.success ? "message" : "error",
+        html += format("<div class='%s'><span class=title>%s:</span> <span class=message>%s</span></div>",
+                       data.success ? "message" : "message error",
                        data.success ? "Message" : "Testing error",
                        critic.html.escape(message));
+      }
+
+      if (data.stderr) {
+        html += "<div class=stderr>";
+        html += "<b>Output:</b>";
+        html += "<div><pre>";
+        html += critic.html.escape(data.stderr);
+        html += "</pre></div></div>";
       }
 
       if (data.stdout) {

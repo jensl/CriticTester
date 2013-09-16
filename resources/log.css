@@ -14,6 +14,18 @@ div.message span.message {
     padding: 5px
 }
 
+div.stderr {
+    margin: 2em
+}
+
+div.stderr pre {
+    display: inline-block;
+    font-family: monospace;
+    border: 1px solid #bb8;
+    background: #ffe;
+    padding: 5px    
+}
+
 div.level {
     margin: 0.5em 0;
     font-weight: bold
