@@ -11,14 +11,12 @@ function get_paths(commit) {
     directory.directories.forEach(process);
     directory.files.forEach(
       function (file) {
-        if (/\.py$/.test(file.path) &&
-            !/^(testing|installation)\//.test(file.path) &&
-            !/^(install|upgrade|uninstall)\.py$/.test(file.path))
-          paths.push(file.path);
+        if (/\.py$/.test(file.path))
+          paths.push(/^src\/(.*)$/.exec(file.path)[1]);
       });
   }
 
-  process(commit.getDirectory("/"));
+  process(commit.getDirectory("src"));
 
   return paths;
 }
@@ -133,7 +131,7 @@ function main(method, path, query) {
 
       get_paths(commit).forEach(
         function (path) {
-          cached[path] = get_file_lines(commit, path, coverage[path], false);
+          cached[path] = get_file_lines(commit, "src/" + path, coverage[path], false);
         });
 
       storage.set(cached_key, JSON.stringify(cached));
