@@ -50,3 +50,8 @@ Function = main
 Description = "Inject: Review front-page alterations."
 Script = server/showreview.js
 Function = main
+
+[Inject showfile]
+Description = "Inject: Add code coverage information."
+Script = server/showfile.js
+Function = main

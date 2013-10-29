@@ -1,0 +1,11 @@
+tr.line.covered td.line {
+    background-color: #dfd !important
+}
+
+tr.line.uncovered-decl td.line {
+    background-color: #ffd !important
+}
+
+tr.line.uncovered td.line {
+    background-color: #fdd !important
+}

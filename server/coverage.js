@@ -105,6 +105,7 @@ function main(method, path, query) {
                 "/extension-resource/CriticTester/coverage.js"],
       review: review });
 
+  var commit_sha1 = /^result:\d+:([^:]+):/.exec(result_key)[1];
   var cached_key = result_key.replace(/^result:/, "cached:");
   var cached_text = storage.get(cached_key);
   var cached;
@@ -121,7 +122,6 @@ function main(method, path, query) {
                      result.success ? "Message" : "Testing error",
                      critic.html.escape(message));
     } else {
-      var commit_sha1 = /^result:\d+:([^:]+):/.exec(result_key)[1];
       var commit = review.repository.getCommit(commit_sha1);
       var coverage = JSON.parse(result.stdout);
 
@@ -178,12 +178,18 @@ function main(method, path, query) {
             return format("%.1f %%", 100 * ratio);
         }
 
+        var showfile = format(
+          "/showfile?repository=%s&sha1=%s&path=src/%s&coverage=%s",
+          review.repository.name, commit_sha1, path, result_key);
+
         html += "<tr class=file>";
         html += format("<!-- %d %d %d %d %d %d -->",
                        lines.irrelevant, lines.declaration, lines.relevant,
                        lines.irrelevant_covered, lines.declaration_covered,
                        lines.relevant_covered);
-        html += format("<td class=path>%s</td>", critic.html.escape(path));
+        html += format("<td class=path><a href='%s'>%s</a></td>",
+                       critic.html.escape(showfile),
+                       critic.html.escape(path));
         html += format("<td class='raw ratio'>%s</td>", format_ratio(raw_ratio));
         html += format("<td class='adjusted ratio'>%s</td>", format_ratio(adjusted_ratio));
         html += format("<td class='code ratio'>%s</td>", format_ratio(code_ratio));
