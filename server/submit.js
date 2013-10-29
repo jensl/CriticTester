@@ -161,7 +161,8 @@ function main(method, path, query) {
                 instance_stats.warnings += parsed.warnings;
               }
             } else if (instance_data.message == "not tested" ||
-                       instance_data.message == "coverage not supported") {
+                       instance_data.message == "coverage not supported" ||
+                       instance_data.message == "debian7 not supported") {
               instance_stats.skipped = true;
             }
 
