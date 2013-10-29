@@ -67,7 +67,7 @@ function main(path, query) {
       ready_to_push: ready_to_push,
       ready_to_push_reason: ready_to_push_reason,
       skipped: skipped,
-      accepted: review.accepted,
+      accepted: review.progress.accepted,
       closed: review.state != "open",
       is_collaborator: is_collaborator(critic.User.current)
     }));
