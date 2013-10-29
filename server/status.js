@@ -13,8 +13,8 @@ function main(path, query) {
 
   if (review.repository.name != "critic") {
     writeln(JSON.stringify({
-      status: "error",
-      error: "invalid use"
+      status: "ok",
+      disabled: true
     }));
   } else {
     var pending_tests = list_tests({ review_id: review.id,

@@ -11,6 +11,11 @@ $(function () {
     if (!result)
       return;
 
+    if (result.disabled) {
+      $("div.testing-status").remove();
+      return;
+    }
+
     function pushToMaster() {
       function finished(result) {
         if (result)
