@@ -50,14 +50,14 @@ function update_review(review_id) {
               function (entry) {
                 if (current_error) {
                   switch (entry.level) {
-                    case "stderr":
                     case "error":
                     case "warning":
                       current_error.push(entry);
-                      break;
+                      return;
 
                     case "debug":
                     case "stdout":
+                    case "stderr":
                       break;
 
                     default:
