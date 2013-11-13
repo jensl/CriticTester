@@ -55,3 +55,9 @@ Function = main
 Description = "Inject: Add code coverage information."
 Script = server/showfile.js
 Function = main
+
+[Page *]
+Description = "Operation: Relay requests to http://test.critic-review.org/."
+Script = server/relay.js
+Function = main
+Host = relay.critic-review.org
