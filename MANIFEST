@@ -36,9 +36,9 @@ Description = "Page: Display code coverage."
 Script = server/coverage.js
 Function = main
 
-[Page CriticTester/push]
-Description = "Operation: Push reviewed and tested commits to master."
-Script = server/push.js
+[Page CriticTester/ready]
+Description = "Operation: Check if review is ready to be pushed to master."
+Script = server/ready.js
 Function = main
 
 [Page CriticTester/status]

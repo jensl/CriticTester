@@ -16,30 +16,6 @@ $(function () {
       return;
     }
 
-    function pushToMaster() {
-      function finished(result) {
-        if (result)
-          location.reload();
-      }
-
-      if (result.ready_to_push) {
-        var operation = new critic.Operation(
-          { action: "push to master",
-            url: "CriticTester/push",
-            data: { review_id: critic.review.id },
-            wait: "Pushing to master ...",
-            callback: finished });
-
-        operation.execute();
-      } else {
-        showMessage("Not supported!", "Not supported!",
-                    "<p>The changes in this review can not be pushed to " +
-                    "master at this time.</p>" +
-                    "<p><b>Reason:</b> " + result.ready_to_push_reason +
-                    "</p>");
-      }
-    }
-
     var status_class, status_text;
 
     switch (true) {
@@ -84,15 +60,6 @@ $(function () {
         function (ev) {
           location.href = "/CriticTester/report?review=" + critic.review.id;
         });
-    }
-
-    if (result.finished &&
-        result.accepted &&
-        result.is_collaborator &&
-        !result.closed) {
-      critic.buttons.add({ title: "Push to master",
-                           onclick: pushToMaster,
-                           scope: "global" });
     }
   }
 
