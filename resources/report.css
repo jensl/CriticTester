@@ -4,9 +4,6 @@ tr.html > td {
 
 table.tests {
     margin: 1em auto;
-    border: 2px solid #bb8;
-    padding: 0.5em 0.5em 1em 0.5em;
-    background: #ffe;
     font-family: monospace
 }
 
@@ -18,15 +15,23 @@ table.tests th, table.tests td {
 
 table.tests tr.title th {
     padding-top: 0.5em;
-    border-bottom: 1px solid black;
     text-align: left;
     font-size: 120%;
+    border-bottom: none
+}
+
+table.tests tbody tr:first-child td {
+    padding-top: 5px
+}
+
+table.tests tbody tr:last-child td {
+    padding-bottom: 5px
 }
 
 table.tests tr.headings th {
     padding-top: 0.5em;
     text-align: left;
-    text-decoration: underline
+    /*text-decoration: underline*/
 }
 
 table.tests a, table.tests a:visited {

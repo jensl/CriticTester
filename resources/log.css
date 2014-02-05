@@ -21,8 +21,6 @@ div.stderr {
 div.stderr pre {
     display: inline-block;
     font-family: monospace;
-    border: 1px solid #bb8;
-    background: #ffe;
     padding: 5px    
 }
 
@@ -36,11 +34,8 @@ div.level label {
 }
 
 table.log {
-    margin: 1em 0;
-    border: 2px solid #bb8;
-    padding: 0.5em;
-    background: #ffe;
-    font-family: monospace
+    font-family: monospace;
+    margin: 1em auto
 }
 
 table.log th, table.log td {

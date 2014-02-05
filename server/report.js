@@ -59,9 +59,10 @@ function main(method, path, query) {
   if (all_pending_tests)
     pending_tests = group_tests(all_pending_tests);
 
-  var html = "<table class=tests>";
+  var html = "<table class='tests callout'>";
 
   if (finished_tests) {
+    html += "<thead>"
     html += "<tr class=title><th colspan=3>Finished Tests</th></tr>";
     html += "<tr class=headings>";
     html += "<th class=commit>Commit</th>";
@@ -69,6 +70,8 @@ function main(method, path, query) {
     html += "<th class=coverage>Coverage</th>";
     html += "<th class=instances>Instances</th>";
     html += "</tr>";
+    html += "</thead>";
+    html += "<tbody>";
 
     finished_tests.forEach(
       function (test) {
@@ -150,9 +153,12 @@ function main(method, path, query) {
         html += format("<td class=instances>%s</td>", instances.join(", "));
         html += "</tr>";
       });
+
+    html += "<tbody>";
   }
 
   if (pending_tests) {
+    html += "<thead>"
     html += "<tr class=title><th colspan=3>Pending Tests</th></tr>";
     html += "<tr class=headings>";
     html += "<th class=commit>Commit</th>";
@@ -160,6 +166,8 @@ function main(method, path, query) {
     html += "<th class=coverage>Coverage</th>";
     html += "<th class=instances>Instances</th>";
     html += "</tr>";
+    html += "</thead>";
+    html += "<tbody>";
 
     pending_tests.forEach(
       function (test) {
@@ -189,6 +197,7 @@ function main(method, path, query) {
       });
 
     html += "<script>setTimeout(function () { location.reload(); }, 10000);</script>";
+    html += "</tbody>";
   }
 
   html += "</table>";

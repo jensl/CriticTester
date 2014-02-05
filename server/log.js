@@ -42,7 +42,7 @@ function main(method, path, query) {
       }
 
       if (data.stderr) {
-        html += "<div class=stderr>";
+        html += "<div class='stderr callout'>";
         html += "<b>Output:</b>";
         html += "<div><pre>";
         html += critic.html.escape(data.stderr);
@@ -56,7 +56,7 @@ function main(method, path, query) {
         html += "<label><input type=radio name=level value=warning> Only show WARNING &amp; ERROR</label>";
         html += "</form></div>";
 
-        html += "<table class='log show-info'>";
+        html += "<table class='log callout show-info'>";
         html += "<tr class=headings>";
         html += "<th class=time>Time</th>";
         html += "<th class=level>Level</th>";
