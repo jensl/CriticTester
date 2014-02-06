@@ -135,7 +135,6 @@ function tests_from_commits(review, commits, instances, mode) {
     test_commits.push(test_commit);
   }
 
-  var upstreams = commits.upstreams;
   var processed = {};
 
   for (var index = test_commits.length - 1; index >= 0; --index) {
@@ -157,14 +156,24 @@ function tests_from_commits(review, commits, instances, mode) {
                     parents: test_commit.previous.parents,
                     upgrade_from: test_commit.previous.actual });
       }
-
-      upstreams.forEach(
-        function (upstream) {
-          maybe_add({ subject: commit,
-                      upgrade_from: upstream });
-        });
     }
   }
+
+  var upstreams = commits.upstreams;
+
+  upstreams.forEach(
+    function (upstream) {
+      maybe_add({ subject: review.branch.head,
+                  upgrade_from: upstream });
+    });
+
+  review.repository
+    .run("for-each-ref", "--format", "%(objectname)", "refs/heads/historic/*")
+    .split(/\n/g).filter(Boolean).forEach(
+      function (sha1) {
+        maybe_add({ subject: review.branch.head,
+                    upgrade_from: review.repository.getCommit(sha1) });
+      });
 
   return tests;
 }

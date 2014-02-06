@@ -64,10 +64,15 @@ Each commit selected for testing is tested in a few different ways:
   final fixup! or squash! commit, the immediate parents are the parents of the
   original commit, not the fixup! or squash! commit.
 
+The commit at the tip of the review branch is tested in some additional ways:
+
 * Upgraded from each of the review's upstreams (typically its merge-base with
   master.)
 
-There will be an overlap -- each of the review's upstreams will also be the
-immediate parent of at least one commit in the review.  Such overlap is
+* Upgraded from each commit referenced by refs/heads/historic/* in the
+  repository.
+
+There may be an overlap -- the review's upstreams may also be the immediate
+parent of the commit at the tip of the review branch.  Such overlap is
 eliminated; only one instance of each unique test is run.
 
