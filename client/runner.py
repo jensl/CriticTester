@@ -16,6 +16,7 @@ import datetime
 import cStringIO
 import traceback
 import multiprocessing
+import contextlib
 
 import utils
 
@@ -60,26 +61,38 @@ else:
     sys.stderr.write("Invalid --instance; not configured in instances.json.\n")
     sys.exit(1)
 
-semaphore = utils.Semaphore(
-    configuration["semaphore-dir"], configuration["max-instances"], actual["identifier"])
+if instance.get("type") not in ("local", "quickstart"):
+    semaphore = utils.Semaphore(
+        configuration["semaphore-dir"], configuration["max-instances"], actual["identifier"])
+else:
+    class Semaphore(object):
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            return False
+    semaphore = Semaphore()
+
+def describe_instance():
+    if "type" in instance:
+        return "--" + instance["type"]
+    elif instance["identifier"] != actual["identifier"]:
+        return "%s (%s)" % (instance["identifier"], actual["identifier"])
+    else:
+        return instance["identifier"]
 
 logger.error("---")
-logger.error("--- Instance: %s (%s)" % (instance["identifier"], actual["identifier"]))
+logger.error("--- Instance: " + describe_instance())
 logger.error("---")
 
-class Context(object):
-    def __init__(self, value, callback, *args):
-        self.value = value
-        self.callback = callback
-        self.args = args
-    def __enter__(self):
-        return self.value
-    def __exit__(self, *_):
+@contextlib.contextmanager
+def Context(value, callback, *args):
+    try:
+        yield value
+    finally:
         try:
-            self.callback(*self.args)
+            callback(*args)
         except Exception:
             traceback.print_exc()
-        return False
 
 def setnonblocking(fd):
     fcntl.fcntl(fd, fcntl.F_SETFL, fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NONBLOCK)
@@ -177,6 +190,8 @@ def run_test(filename, test):
             return Context(repository_path, shutil.rmtree, base_path)
 
     def is_running():
+        if instance.get("type") in ("local", "quickstart"):
+            return False
         try:
             output = subprocess.check_output(
                 ["VBoxManage", "list", "runningvms"],
@@ -184,13 +199,16 @@ def run_test(filename, test):
         except subprocess.CalledProcessError:
             return True
         else:
-            name = '"%s"' % arguments.instance
-            uuid = '{%s}' % arguments.instance
+            name = '"%s"' % actual["identifier"]
+            uuid = '{%s}' % actual["identifier"]
             for line in output.splitlines():
                 if name in line or uuid in line:
                     return True
             else:
                 return False
+
+    class NotSupported(Exception):
+        pass
 
     def start_process(repository_path, snapshot):
         argv_base = [sys.executable, "-u", "-m", "testing.main"]
@@ -201,37 +219,54 @@ def run_test(filename, test):
         else:
             argv.extend(["--debug"])
 
-        argv.extend(["--vm-identifier", arguments.instance])
-        argv.extend(["--vm-hostname", actual["hostname"]])
-        argv.extend(["--vm-snapshot", snapshot])
-
-        if "ssh-port" in actual:
-            argv.extend(["--vm-ssh-port", str(actual["ssh-port"])])
-        if "http-port" in actual:
-            argv.extend(["--vm-http-port", str(actual["http-port"])])
-        if "git-daemon-port" in actual:
-            argv.extend(["--git-daemon-port",
-                         str(actual["git-daemon-port"])])
-
         help_output = subprocess.check_output(
-            argv_base + ["--help"], cwd=repository_path)
+            argv_base + ["--help"], cwd=repository_path).splitlines()
 
-        supports_test_extensions = False
-        supports_strict_fs_permissions = False
+        if instance.get("type") == "local":
+            for line in help_output:
+                if line.strip().startswith("--local"):
+                    break
+            else:
+                raise NotSupported("--local not supported")
 
-        for line in help_output.splitlines():
-            line = line.strip()
-            if line.startswith("--test-extensions"):
-                supports_test_extensions = True
-            elif line.startswith("--strict-fs-permissions"):
-                supports_strict_fs_permissions = True
+            argv.append("--local")
+        elif instance.get("type") == "quickstart":
+            for line in help_output:
+                if line.strip().startswith("--quickstart"):
+                    break
+            else:
+                raise NotSupported("--quickstart not supported")
 
-        if supports_test_extensions and instance.get("test-extensions", False):
-            argv.extend(["--cache-dir", configuration["cache-dir"],
-                         "--test-extensions"])
+            argv.append("--quickstart")
+        else:
+            argv.extend(["--vm-identifier", actual["identifier"]])
+            argv.extend(["--vm-hostname", actual["hostname"]])
+            argv.extend(["--vm-snapshot", snapshot])
 
-        if supports_strict_fs_permissions:
-            argv.append("--strict-fs-permissions")
+            if "ssh-port" in actual:
+                argv.extend(["--vm-ssh-port", str(actual["ssh-port"])])
+            if "http-port" in actual:
+                argv.extend(["--vm-http-port", str(actual["http-port"])])
+            if "git-daemon-port" in actual:
+                argv.extend(["--git-daemon-port",
+                             str(actual["git-daemon-port"])])
+
+            supports_test_extensions = False
+            supports_strict_fs_permissions = False
+
+            for line in help_output:
+                line = line.strip()
+                if line.startswith("--test-extensions"):
+                    supports_test_extensions = True
+                elif line.startswith("--strict-fs-permissions"):
+                    supports_strict_fs_permissions = True
+
+            if supports_test_extensions and instance.get("test-extensions", False):
+                argv.extend(["--cache-dir", configuration["cache-dir"],
+                             "--test-extensions"])
+
+            if supports_strict_fs_permissions:
+                argv.append("--strict-fs-permissions")
 
         if upgrade_from_sha1:
             argv.extend(["--upgrade-from", upgrade_from_sha1])
@@ -287,7 +322,9 @@ def run_test(filename, test):
             logger.error("---")
             return finish(success=True, message="debian7 not supported")
 
-    if test["type"] == "coverage":
+    if instance.get("type") in ("local", "quickstart"):
+        snapshot = None
+    elif test["type"] == "coverage":
         supports_coverage = subprocess.check_output(
             ["git", "ls-tree", commit_sha1, "src/coverage.py"],
             cwd=configuration["critic.git"]).strip()
@@ -301,16 +338,23 @@ def run_test(filename, test):
     else:
         snapshot = select_snapshot()
 
-    if snapshot is None:
-        logger.error("--- Skipped")
-        logger.error("---")
-        return finish(success=True, message="not tested")
+        if snapshot is None:
+            logger.error("--- Skipped")
+            logger.error("---")
+            return finish(success=True, message="not tested")
 
-    logger.error("--- Snapshot: %s" % snapshot)
+    if snapshot is not None:
+        logger.error("--- Snapshot: %s" % snapshot)
+
     logger.error("---")
 
     with semaphore, prepare_repositories() as repository_path:
-        process = start_process(repository_path, snapshot)
+        try:
+            process = start_process(repository_path, snapshot)
+        except NotSupported as error:
+            logger.error("--- Not supported")
+            logger.error("---")
+            return finish(success=True, message=error.message)
 
         setnonblocking(process.stdout)
         setnonblocking(process.stderr)
@@ -465,8 +509,17 @@ def run_test(filename, test):
         message = None
 
     if not aborted:
-        for line in stdout.getvalue().splitlines():
-            if line.strip().endswith(
+        stdout_lines = stdout.getvalue().splitlines()
+
+        if instance.get("type") == "local":
+            for line in stdout_lines:
+                if line.endswith("No tests selected!"):
+                    logger.error("--- Not supported")
+                    logger.error("---")
+                    return finish(success=True, message="--local not supported")
+
+        for line in stdout_lines:
+            if line.endswith(
                 "ChangesetBackgroundServiceError: Changeset background "
                 "service failed: No such file or directory"):
                 return False
