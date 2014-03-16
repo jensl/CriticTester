@@ -52,6 +52,7 @@ outgoing_dir = os.path.join(configuration["queue-dir"], "outgoing")
 
 try:
     print_nothing_to_do = True
+    custom_sha1s = set()
 
     while True:
         result = critic.operation(
@@ -66,6 +67,8 @@ try:
                                   if filename.endswith(".json")]) |
                              set([filename for filename in os.listdir(outgoing_dir)
                                   if filename.endswith(".json")]))
+
+                filenames -= set(["custom.json"])
 
                 for review_id in result["tests"]:
                     for test in result["tests"][review_id]:
@@ -87,6 +90,18 @@ try:
         elif print_nothing_to_do:
             print_nothing_to_do = False
             logger.debug("No pending tests")
+
+        if result["custom"]:
+            with utils.locked_directory(configuration["queue-dir"]):
+                custom_filename = os.path.join(incoming_dir, "custom.json")
+                with open(custom_filename, "w") as custom_file:
+                    json.dump(result["custom"], custom_file)
+
+                custom_sha1 = result["custom"]["sha1"]
+                if custom_sha1 and custom_sha1 not in custom_sha1s:
+                    logger.debug("New custom SHA-1: " + custom_sha1)
+                    update_mirrors(custom_sha1)
+                    custom_sha1s.add(custom_sha1)
 
         time.sleep(10)
 except KeyboardInterrupt:
