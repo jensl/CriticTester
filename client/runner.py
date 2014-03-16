@@ -21,6 +21,7 @@ import contextlib
 import utils
 
 USE_PASSLIB_SHA1 = "5d545b0b957b4c942a01ca9f0133547eafcf8f96"
+APACHE_2_4_SHA1 = "2a254e94a3167d856617dc6219ac60442a340eef"
 
 configuration = json.load(open("configuration.json"))
 instances = json.load(open("instances.json"))
@@ -321,6 +322,26 @@ def run_test(filename, test):
             logger.error("--- Not supported (depends on python-bcrypt)")
             logger.error("---")
             return finish(success=True, message="debian7 not supported")
+    elif instance["identifier"] == "ubuntu1310":
+        if upgrade_from_sha1:
+            install_sha1 = upgrade_from_sha1
+        else:
+            install_sha1 = commit_sha1
+
+        try:
+            subprocess.check_call(
+                ["git", "merge-base", "--is-ancestor", APACHE_2_4_SHA1,
+                 install_sha1],
+                cwd=configuration["critic.git"])
+        except subprocess.CalledProcessError:
+            supports_apache_2_4 = False
+        else:
+            supports_apache_2_4 = True
+
+        if not supports_apache_2_4:
+            logger.error("--- Not supported (Apache 2.4)")
+            logger.error("---")
+            return finish(success=True, message="ubuntu1310 not supported")
 
     if instance.get("type") in ("local", "quickstart"):
         snapshot = None
