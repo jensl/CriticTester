@@ -178,8 +178,8 @@ def run_test(filename, test):
                 ["git", "checkout", "--quiet", commit_sha1],
                 cwd=repository_path)
 
-            if os.path.isdir(os.path.join(repository_path,
-                                          "installation/externals/v8-jsshell")):
+            if instance["test-extensions"] and os.path.isdir(os.path.join(
+                    repository_path, "installation/externals/v8-jsshell")):
                 subprocess.check_output(
                     ["git", "submodule", "update", "--init",
                      "installation/externals/v8-jsshell"],
