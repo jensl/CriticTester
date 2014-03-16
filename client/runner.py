@@ -212,7 +212,7 @@ def run_test(filename, test):
         pass
 
     def start_process(repository_path, snapshot):
-        argv_base = [sys.executable, "-u", "-m", "testing.main"]
+        argv_base = [sys.executable, "-u", "-m", "testing"]
         argv = argv_base[:]
 
         if test["type"] == "coverage":
