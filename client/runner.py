@@ -544,6 +544,8 @@ def run_test(filename, test):
                 "ChangesetBackgroundServiceError: Changeset background "
                 "service failed: No such file or directory"):
                 return False
+            if line.endswith("ZeroDivisionError: float division by zero"):
+                return False
 
         return finish(success=success,
                       message=message,
