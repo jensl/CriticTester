@@ -98,6 +98,18 @@ def Context(value, callback, *args):
 def setnonblocking(fd):
     fcntl.fcntl(fd, fcntl.F_SETFL, fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NONBLOCK)
 
+critic = utils.Critic()
+
+def signal_running(filename=None, test=None):
+    data = { "runner_id": actual["identifier"] }
+    if filename and test:
+        review_id = int(filename.partition(":")[0])
+        data.update({ "instance_id": instance["identifier"],
+                      "review_id": review_id,
+                      "commit": test["commit"],
+                      "upgrade_from": test.get("upgrade_from") })
+    critic.operation("CriticTester/running", data=data)
+
 def run_test(filename, test):
     start = time.time()
 
@@ -565,6 +577,8 @@ def is_testable(filename):
     return True
 
 try:
+    is_running = False
+
     while True:
         with utils.locked_directory(configuration["queue-dir"]):
             filenames = [filename for filename in os.listdir(incoming_dir)
@@ -581,6 +595,9 @@ try:
                 test = None
 
         if test:
+            signal_running(filename, test)
+            is_running = True
+
             data = run_test(filename, test)
             if data is None:
                 raise KeyboardInterrupt
@@ -592,6 +609,10 @@ try:
                     os.unlink(incoming_filename)
                 os.unlink(incoming_filename + ".testing")
         else:
+            if is_running:
+                signal_running()
+                is_running = False
+
             time.sleep(1)
 except KeyboardInterrupt:
     pass
