@@ -481,7 +481,18 @@ def run_test(filename, test):
                 else:
                     deadline = activity_deadline[0]
 
-                poll.poll(deadline - time.time())
+                events = poll.poll(min(10, deadline - time.time()))
+
+                if filename:
+                    incoming_filename = os.path.join(incoming_dir, filename)
+                    if not os.path.isfile(incoming_filename):
+                        logger.info("--- Test aborted!")
+                        interrupt()
+                        filename = None
+                        aborted = True
+
+                if not events:
+                    continue
 
                 while not stdout_eof:
                     line = stdout_reader.readline()
