@@ -583,8 +583,15 @@ outgoing_dir = os.path.join(configuration["queue-dir"], "outgoing")
 def is_testable(filename):
     if not filename.endswith(":%s.json" % instance["identifier"]):
         return False
-    if os.path.isfile(os.path.join(incoming_dir, filename + ".testing")):
-        return False
+    testing_filename = os.path.join(incoming_dir, filename + ".testing")
+    if os.path.isfile(testing_filename):
+        with open(testing_filename) as testing_file:
+            if testing_file.read().strip() == actual["identifier"]:
+                logger.warning("Removing stale file: %s"
+                               % (filename + ".testing"))
+                os.unlink(testing_filename)
+            else:
+                return False
     return True
 
 try:
@@ -600,8 +607,8 @@ try:
                 incoming_filename = os.path.join(incoming_dir, filename)
                 with open(incoming_filename) as incoming_file:
                     test = json.load(incoming_file)
-                with open(incoming_filename + ".testing", "w") as pid_file:
-                    print >>pid_file, "%d\n" % os.getpid()
+                with open(incoming_filename + ".testing", "w") as testing_file:
+                    print >>testing_file, actual["identifier"]
             else:
                 test = None
 
