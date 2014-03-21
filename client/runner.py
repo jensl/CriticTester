@@ -407,6 +407,7 @@ def run_test(filename, test):
         terminated = False
         killed = False
         aborted = False
+        obsoleted = False
 
         activity_deadline = [0]
         overall_deadline = [0]
@@ -489,7 +490,7 @@ def run_test(filename, test):
                         logger.info("--- Test aborted!")
                         interrupt()
                         filename = None
-                        aborted = True
+                        obsoleted = True
 
                 if not events:
                     continue
@@ -552,30 +553,32 @@ def run_test(filename, test):
         success = True
         message = None
 
-    if not aborted:
-        stdout_lines = stdout.getvalue().splitlines()
-
-        if instance.get("type") == "local":
-            for line in stdout_lines:
-                if line.endswith("No tests selected!"):
-                    logger.error("--- Not supported")
-                    logger.error("---")
-                    return finish(success=True, message="--local not supported")
-
-        for line in stdout_lines:
-            if line.endswith(
-                "ChangesetBackgroundServiceError: Changeset background "
-                "service failed: No such file or directory"):
-                return False
-            if line.endswith("ZeroDivisionError: float division by zero"):
-                return False
-
-        return finish(success=success,
-                      message=message,
-                      stdout=stdout.getvalue(),
-                      stderr=stderr.getvalue())
-    else:
+    if aborted:
+        raise KeyboardInterrupt
+    elif obsoleted:
         return None
+
+    stdout_lines = stdout.getvalue().splitlines()
+
+    if instance.get("type") == "local":
+        for line in stdout_lines:
+            if line.endswith("No tests selected!"):
+                logger.error("--- Not supported")
+                logger.error("---")
+                return finish(success=True, message="--local not supported")
+
+    for line in stdout_lines:
+        if line.endswith(
+            "ChangesetBackgroundServiceError: Changeset background "
+            "service failed: No such file or directory"):
+            return False
+        if line.endswith("ZeroDivisionError: float division by zero"):
+            return False
+
+    return finish(success=success,
+                  message=message,
+                  stdout=stdout.getvalue(),
+                  stderr=stderr.getvalue())
 
 incoming_dir = os.path.join(configuration["queue-dir"], "incoming")
 outgoing_dir = os.path.join(configuration["queue-dir"], "outgoing")
@@ -617,8 +620,7 @@ try:
             is_running = True
 
             data = run_test(filename, test)
-            if data is None:
-                raise KeyboardInterrupt
+
             with utils.locked_directory(configuration["queue-dir"]):
                 if data and os.path.isfile(incoming_filename):
                     outgoing_filename = os.path.join(outgoing_dir, filename)
