@@ -190,12 +190,25 @@ def run_test(filename, test):
                 ["git", "checkout", "--quiet", commit_sha1],
                 cwd=repository_path)
 
-            if instance["test-extensions"] and os.path.isdir(os.path.join(
-                    repository_path, "installation/externals/v8-jsshell")):
-                subprocess.check_output(
-                    ["git", "submodule", "update", "--init",
-                     "installation/externals/v8-jsshell"],
-                    cwd=repository_path)
+            if instance["test-extensions"]:
+                v8jsshell_path = os.path.join(
+                    repository_path, "installation/externals/v8-jsshell")
+                if os.path.isdir(v8jsshell_path):
+                    subprocess.check_output(
+                        ["git", "submodule", "update", "--init",
+                         "installation/externals/v8-jsshell"],
+                        cwd=repository_path)
+                    if "v8.git" in configuration:
+                        subprocess.check_call(
+                            ["git", "submodule", "init", "v8"],
+                            cwd=v8jsshell_path)
+                        subprocess.check_call(
+                            ["git", "config", "submodule.v8.url",
+                             configuration["v8.git"]],
+                            cwd=v8jsshell_path)
+                        subprocess.check_output(
+                            ["git", "submodule", "update", "v8"],
+                            cwd=v8jsshell_path)
         except:
             shutil.rmtree(base_path)
             raise

@@ -25,10 +25,17 @@ def update_mirrors(commit_sha1):
             ["git", "fetch", "--all", "--quiet"],
             stderr=subprocess.STDOUT, cwd=configuration["critic.git"])
 
-        logger.debug("Updating: v8-jsshell.git")
-        subprocess.check_output(
-            ["git", "fetch", "--all", "--quiet"],
-            stderr=subprocess.STDOUT, cwd=configuration["v8-jsshell.git"])
+        if "v8-jsshell.git" in configuration:
+            logger.debug("Updating: v8-jsshell.git")
+            subprocess.check_output(
+                ["git", "fetch", "--all", "--quiet"],
+                stderr=subprocess.STDOUT, cwd=configuration["v8-jsshell.git"])
+
+        if "v8.git" in configuration:
+            logger.debug("Updating: v8.git")
+            subprocess.check_output(
+                ["git", "fetch", "--all", "--quiet"],
+                stderr=subprocess.STDOUT, cwd=configuration["v8.git"])
 
         logger.info("Updated mirrors")
 
