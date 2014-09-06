@@ -314,6 +314,15 @@ def run_test(filename, test):
 
     if is_running():
         logger.error("--- VM is busy!")
+
+        time.sleep(3)
+
+        if is_running():
+            logger.error("--- Attempting to power off ...")
+
+            subprocess.check_call(["VBoxManage", "controlvm",
+                                   actual["identifier"], "poweroff"])
+
         while is_running():
             time.sleep(1)
 
