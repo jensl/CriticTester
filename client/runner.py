@@ -158,9 +158,11 @@ def run_test(filename, test):
                 snapshot = "clean"
                 break
             elif changed_file.startswith("resources/") \
-                    or changed_file.startswith("src/resources/"):
-                # Static resources don't affect testing (unfortunately) so
-                # no point in testing commits only changing them.
+                    or changed_file.startswith("src/resources/") \
+                    or changed_file.startswith("src/frontend/"):
+                # Static resources, or the new front-end code, don't affect
+                # testing (unfortunately) so no point in testing commits only
+                # changing them.
                 continue
             elif upgrade_from_sha1 and (
                 changed_file.startswith("tutorials/") and
