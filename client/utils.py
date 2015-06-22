@@ -12,6 +12,18 @@ instances = json.load(open("instances.json"))
 
 logger = None
 
+def set_safe_locale():
+    """Make sure we have a safe and unproblematic locale setting"""
+
+    for name in os.environ.keys():
+        if name.startswith("LC_"):
+            del os.environ[name]
+
+    if "LANGUAGE" in os.environ:
+        del os.environ["LANGUAGE"]
+
+    os.environ["LANG"] = "C"
+
 def configure_logging():
     global logger
 

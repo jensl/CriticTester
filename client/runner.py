@@ -20,6 +20,8 @@ import contextlib
 
 import utils
 
+utils.set_safe_locale()
+
 USE_PASSLIB_SHA1 = "5d545b0b957b4c942a01ca9f0133547eafcf8f96"
 APACHE_2_4_SHA1 = "2a254e94a3167d856617dc6219ac60442a340eef"
 UBUNTU_14_04_SHA1 = "dee45e95fa8b91af7d032b636ec3ed3f6b616e78"
