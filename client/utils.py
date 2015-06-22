@@ -88,8 +88,7 @@ class Critic(object):
                     "%s/validatelogin" % configuration["critic-url"],
                     data=json.dumps(
                         { "username": configuration["critic-username"],
-                          "password": configuration["critic-password"] }),
-                    verify=False)
+                          "password": configuration["critic-password"] }))
             except Exception:
                 logger.exception("login failed")
                 time.sleep(1)
@@ -103,8 +102,7 @@ class Critic(object):
             try:
                 response = self.session.post(
                     "%s/%s" % (configuration["critic-url"], path),
-                    data=json.dumps(data),
-                    verify=False)
+                    data=json.dumps(data))
                 if response.status_code == 500:
                     logger.error("Operation failed:\n" + response.text)
                 response.raise_for_status()
