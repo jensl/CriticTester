@@ -270,6 +270,26 @@ def run_test(filename, test):
 
             argv.append("--quickstart")
         else:
+            supports_test_extensions = False
+            supports_strict_fs_permissions = False
+            supports_vm_web_server = False
+
+            for line in help_output:
+                line = line.strip()
+                if line.startswith("--test-extensions"):
+                    supports_test_extensions = True
+                elif line.startswith("--strict-fs-permissions"):
+                    supports_strict_fs_permissions = True
+                elif line.startswith("--vm-web-server"):
+                    supports_vm_web_server = True
+
+            if instance["identifier"] == "ubuntu1404" and \
+                    not supports_vm_web_server:
+                # The installed prereqs assume we'll use nginx+uwsgi, and will
+                # conflict with installing an older commit that installs Apache.
+                # So force use of the clean snapshot without prereqs installed.
+                snapshot = "clean"
+
             argv.extend(["--vm-identifier", actual["identifier"]])
             argv.extend(["--vm-hostname", actual["hostname"]])
             argv.extend(["--vm-snapshot", snapshot])
@@ -282,22 +302,15 @@ def run_test(filename, test):
                 argv.extend(["--git-daemon-port",
                              str(actual["git-daemon-port"])])
 
-            supports_test_extensions = False
-            supports_strict_fs_permissions = False
-
-            for line in help_output:
-                line = line.strip()
-                if line.startswith("--test-extensions"):
-                    supports_test_extensions = True
-                elif line.startswith("--strict-fs-permissions"):
-                    supports_strict_fs_permissions = True
-
             if supports_test_extensions and instance.get("test-extensions", False):
                 argv.extend(["--cache-dir", configuration["cache-dir"],
                              "--test-extensions"])
 
             if supports_strict_fs_permissions:
                 argv.append("--strict-fs-permissions")
+
+            if supports_vm_web_server and instance.get("web-server"):
+                argv.extend(["--vm-web-server", instance.get("web-server")])
 
         if upgrade_from_sha1:
             argv.extend(["--upgrade-from", upgrade_from_sha1])
