@@ -250,6 +250,10 @@ def run_test(filename, test):
         else:
             argv.extend(["--debug"])
 
+        if "git-daemon-port" in actual:
+            argv.extend(["--git-daemon-port",
+                         str(actual["git-daemon-port"])])
+
         help_output = subprocess.check_output(
             argv_base + ["--help"], cwd=repository_path).splitlines()
 
@@ -298,9 +302,6 @@ def run_test(filename, test):
                 argv.extend(["--vm-ssh-port", str(actual["ssh-port"])])
             if "http-port" in actual:
                 argv.extend(["--vm-http-port", str(actual["http-port"])])
-            if "git-daemon-port" in actual:
-                argv.extend(["--git-daemon-port",
-                             str(actual["git-daemon-port"])])
 
             if supports_test_extensions and instance.get("test-extensions", False):
                 argv.extend(["--cache-dir", configuration["cache-dir"],
