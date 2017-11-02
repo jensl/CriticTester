@@ -113,6 +113,29 @@ def signal_running(filename=None, test=None):
                       "upgrade_from": test.get("upgrade_from") })
     critic.operation("CriticTester/running", data=data)
 
+def read_file(repository_path, sha1, path):
+    return subprocess.check_output(
+        ["git", "cat-file", "blob", "%s:%s" % (sha1, path)],
+        cwd=repository_path)
+
+def required_python_version(repository_path, sha1):
+    for python_version, python in configuration["python-versions"].items():
+        # Read pythonversion.py, but strip all file-level comments, since the
+        # standard file header contains non-ASCII characters.
+        pythonversion_py = "\n".join(
+            line for line in
+            read_file(repository_path, sha1, "pythonversion.py").splitlines()
+            if not line.startswith("#"))
+        pythonversion_py += "\ncheck()"
+
+        check = subprocess.Popen(
+            [python, "-c", "import sys; exec(sys.stdin.read())"],
+            stdin=subprocess.PIPE)
+        check.communicate(pythonversion_py)
+
+        if check.returncode == 0:
+            return python_version
+
 def run_test(filename, test):
     start = time.time()
 
@@ -242,7 +265,23 @@ def run_test(filename, test):
         pass
 
     def start_process(repository_path, snapshot):
-        argv_base = [sys.executable, "-u", "-m", "testing"]
+        install_python_version = required_python_version(
+            repository_path, commit_sha1)
+
+        if install_python_version is None:
+            raise NotSupported("No valid Python version found")
+
+        if upgrade_from_sha1:
+            upgrade_python_version = install_python_version
+            install_python_version = required_python_version(
+                repository_path, upgrade_from_sha1)
+            if install_python_version is None:
+                raise NotSupported("No valid Python version found")
+            python = configuration["python-versions"][upgrade_python_version]
+        else:
+            python = configuration["python-versions"][install_python_version]
+
+        argv_base = [python, "-u", "-m", "testing"]
         argv = argv_base[:]
 
         if test["type"] == "coverage":
@@ -277,6 +316,8 @@ def run_test(filename, test):
             supports_test_extensions = False
             supports_strict_fs_permissions = False
             supports_vm_web_server = False
+            supports_vm_install_python = False
+            supports_vm_install_arg = False
 
             for line in help_output:
                 line = line.strip()
@@ -286,6 +327,10 @@ def run_test(filename, test):
                     supports_strict_fs_permissions = True
                 elif line.startswith("--vm-web-server"):
                     supports_vm_web_server = True
+                elif line.startswith("--vm-install-python"):
+                    supports_vm_install_python = True
+                elif line.startswith("--vm-install-arg"):
+                    supports_vm_install_arg = True
 
             if instance["identifier"] == "ubuntu1404" and \
                     not supports_vm_web_server:
@@ -312,6 +357,21 @@ def run_test(filename, test):
 
             if supports_vm_web_server and instance.get("web-server"):
                 argv.extend(["--vm-web-server", instance.get("web-server")])
+
+            if supports_vm_install_python:
+                python_versions = configuration["python-versions"]
+                argv.extend(["--vm-install-python",
+                             python_versions[install_python_version]])
+                if upgrade_from_sha1:
+                    argv.extend(["--vm-upgrade-python",
+                                 python_versions[upgrade_python_version]])
+
+            if supports_vm_install_arg and install_python_version == "python3.6":
+                argv.extend([
+                    "--vm-install-arg=--pip-extra-arg=--no-index",
+                    ("--vm-install-arg="
+                     "--pip-extra-arg=--find-links=/home/jl/pypi"),
+                ])
 
         if upgrade_from_sha1:
             argv.extend(["--upgrade-from", upgrade_from_sha1])
