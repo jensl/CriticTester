@@ -86,9 +86,12 @@ class Critic(object):
                 self.session = requests.Session()
                 self.session.post(
                     "%s/validatelogin" % configuration["critic-url"],
-                    data=json.dumps(
-                        { "username": configuration["critic-username"],
-                          "password": configuration["critic-password"] }))
+                    data=json.dumps({
+                        "fields": {
+                            "username": configuration["critic-username"],
+                            "password": configuration["critic-password"]
+                        }
+                    }))
             except Exception:
                 logger.exception("login failed")
                 time.sleep(1)
