@@ -25,6 +25,8 @@ utils.set_safe_locale()
 USE_PASSLIB_SHA1 = "5d545b0b957b4c942a01ca9f0133547eafcf8f96"
 APACHE_2_4_SHA1 = "2a254e94a3167d856617dc6219ac60442a340eef"
 UBUNTU_14_04_SHA1 = "dee45e95fa8b91af7d032b636ec3ed3f6b616e78"
+UBUNTU_16_04_SHA1 = "51a0ca17258a9d2bb0145c6ec23970a93a6b2f07"
+UBUNTU_16_04_EXTENSIONS_SHA1 = "4b815f417f8f6648a8a332d64050adbf53eaaa49"
 
 configuration = json.load(open("configuration.json"))
 instances = json.load(open("instances.json"))
@@ -264,6 +266,8 @@ def run_test(filename, test):
     class NotSupported(Exception):
         pass
 
+    instance_test_extensions = instance.get("test-extensions", False)
+
     def start_process(repository_path, snapshot):
         install_python_version = required_python_version(
             repository_path, commit_sha1)
@@ -348,7 +352,7 @@ def run_test(filename, test):
             if "http-port" in actual:
                 argv.extend(["--vm-http-port", str(actual["http-port"])])
 
-            if supports_test_extensions and instance.get("test-extensions", False):
+            if supports_test_extensions and instance_test_extensions:
                 argv.extend(["--cache-dir", configuration["cache-dir"],
                              "--test-extensions"])
 
@@ -455,7 +459,7 @@ def run_test(filename, test):
             logger.error("--- Not supported (Apache 2.4)")
             logger.error("---")
             return finish(success=True, message="ubuntu1310 not supported")
-    elif instance["identifier"] == "ubuntu1404":
+    elif instance["identifier"] in ("ubuntu1404", "ubuntu1604"):
         if upgrade_from_sha1:
             install_sha1 = upgrade_from_sha1
         else:
@@ -472,9 +476,36 @@ def run_test(filename, test):
             supports_ubuntu_14_04 = True
 
         if not supports_ubuntu_14_04:
-            logger.error("--- Not supported (Ubuntu 14.04)")
+            logger.error("--- Not supported (%s)" % instance["description"])
             logger.error("---")
-            return finish(success=True, message="ubuntu1404 not supported")
+            return finish(success=True, message=("%s not supported"
+                                                 % instance["identifier"]))
+
+        if instance["identifier"] == "ubuntu1604":
+            try:
+                subprocess.check_call(
+                    ["git", "merge-base", "--is-ancestor", UBUNTU_16_04_SHA1,
+                     commit_sha1],
+                    cwd=configuration["critic.git"])
+            except subprocess.CalledProcessError:
+                supports_ubuntu_16_04 = False
+            else:
+                supports_ubuntu_16_04 = True
+
+            if not supports_ubuntu_16_04:
+                logger.error("--- Not supported (Ubuntu 16.04)")
+                logger.error("---")
+                return finish(success=True, message="ubuntu1604 not supported")
+
+            try:
+                subprocess.check_call(
+                    ["git", "merge-base", "--is-ancestor",
+                     UBUNTU_16_04_EXTENSIONS_SHA1, commit_sha1],
+                    cwd=configuration["critic.git"])
+            except subprocess.CalledProcessError:
+                instance_test_extensions = False
+            else:
+                pass
 
     if instance.get("type") in ("local", "quickstart"):
         snapshot = None
