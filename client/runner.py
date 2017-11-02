@@ -419,12 +419,28 @@ def run_test(filename, test):
                      % (upgrade_from_sha1[:8], test["upgrade_from_title"]))
     logger.error("--- Type: %s" % test["type"])
 
-    if instance["identifier"] == "debian7":
-        if upgrade_from_sha1:
-            install_sha1 = upgrade_from_sha1
-        else:
-            install_sha1 = commit_sha1
+    if upgrade_from_sha1:
+        install_sha1 = upgrade_from_sha1
+    else:
+        install_sha1 = commit_sha1
 
+    def is_broken(sha1):
+        is_all_broken = bool(subprocess.check_output(
+            ["git", "ls-tree", sha1, "testing/flags/broken-all.flag"],
+            cwd=configuration["critic.git"]).strip())
+        is_instance_broken = bool(subprocess.check_output(
+            ["git", "ls-tree", sha1, ("testing/flags/broken-%s.flag"
+                                      % instance["identifier"])],
+            cwd=configuration["critic.git"]).strip())
+        return is_all_broken or is_instance_broken
+
+    if is_broken(commit_sha1) or (upgrade_from_sha1
+                                  and is_broken(upgrade_from_sha1)):
+        logger.error("--- Not supported (known broken)")
+        logger.error("---")
+        return finish(success=True, message="broken commit")
+
+    if instance["identifier"] == "debian7":
         try:
             subprocess.check_call(
                 ["git", "merge-base", "--is-ancestor", USE_PASSLIB_SHA1,
@@ -440,11 +456,6 @@ def run_test(filename, test):
             logger.error("---")
             return finish(success=True, message="debian7 not supported")
     elif instance["identifier"] == "ubuntu1310":
-        if upgrade_from_sha1:
-            install_sha1 = upgrade_from_sha1
-        else:
-            install_sha1 = commit_sha1
-
         try:
             subprocess.check_call(
                 ["git", "merge-base", "--is-ancestor", APACHE_2_4_SHA1,
@@ -460,11 +471,6 @@ def run_test(filename, test):
             logger.error("---")
             return finish(success=True, message="ubuntu1310 not supported")
     elif instance["identifier"] in ("ubuntu1404", "ubuntu1604"):
-        if upgrade_from_sha1:
-            install_sha1 = upgrade_from_sha1
-        else:
-            install_sha1 = commit_sha1
-
         try:
             subprocess.check_call(
                 ["git", "merge-base", "--is-ancestor", UBUNTU_14_04_SHA1,
